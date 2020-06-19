@@ -1,0 +1,197 @@
+---
+title: "R for Data Science, Section 3: Data Visualization, Practice Problems"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+### Problem 3.2.4
+
+##### 1: Run ggplot(data=mpg). What do you see?
+```{r}
+ggplot(data = mpg)
+```
+
+##### 2. How many rows are in mpg? How many columns?
+```{r}
+mpg
+```
+
+##### 3. What doe sthe drv variable describe? Read the help for ?mpg to find out.
+
+drv represents the type of drive train, where f=front-wheel drive, r=rear wheel drive, 4=4 wheel drive.
+
+##### 4. Make a scatterplot of hwy vs. cyl.
+```{r}
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=hwy, y=cyl))
+```
+
+##### 5. What happens if you make a scatterplot of class vs. drv? Why is the plot not useful?
+
+
+All the information here is categorical, so a scatterplot is not the best method of visualization. It would be better with a bar plot.
+
+```{r}
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=class, y=drv))
+```
+
+
+### Problem 3.3.1
+
+##### 1. What's wrong with this code? Why are the points not blue?
+
+The color is only being applied to the mapping so it is treated as a label rather than actual color for the points.
+
+```{r}
+ggplot(data = mpg)+ 
+  geom_point(mapping = aes(x=displ, y=hwy, color="blue"))
+```
+
+##### 2. Which variabels in mpg are categorical? Which variables are continuous? (Hint: type ?mpg to read the documentation for the dataset). How can you see this information when you run mpg?
+
+categorical: manufacturer, model, trans, drv, fl, class
+
+continuous: displ, year, cyl, cty, hwy
+
+
+##### 3. Map a continuous variable to color, size, and shape. How do these aesthetics behave differently for categorical vs. continuous variables?
+
+- Categorical values get discrete values - work with all attributes (color, size, shape)
+
+- Categorical values get a color gradient, don't really work well with size and shape 
+
+```{r}
+#categorical
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy, color=drv))
+
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy, size=drv))
+
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy), shape=mpg$drv)
+
+#continuous
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy, color=cty))
+
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy, size=cty))
+
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy), shape=mpg$cty)
+```
+
+##### 4. What happens if you map the same variable to multiple aesthetics?
+```{r}
+#categorical
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy, color=mpg$drv, size=drv, shape=mpg$drv))
+```
+
+##### 5. What does the stroke aesthetic do? What shapes does it work with? (Hint: use ?geom_point)
+
+Stroke controls size of the stroke surrounding the point (ie. outline).
+
+```{r}
+#categorical
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy, shape=drv, stroke=1))
+```
+
+##### 6. What happens if you map an aesthetic to something other than a variable name, like aes(colour = displ < 5)? Note, you’ll also need to specify x and y.
+```{r}
+#categorical
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy, colour=displ<5))
+```
+
+
+### Problem 3.7.1
+
+##### 1. What is the default geom associated with stat_summary()? How could you rewrite the previous plot to use that geom function instead of the stat function?
+
+The default geom is pointrange. Use geom_pointrange(stat="summary").
+
+```{r}
+ggplot(data = diamonds) + 
+  stat_summary(
+    mapping = aes(x = cut, y = depth),
+    fun.min = min,
+    fun.max = max,
+    fun = median
+  )
+
+ggplot(data = diamonds) + 
+  geom_pointrange(
+    stat="summary",
+    mapping = aes(x = cut, y = depth),
+    fun.min = min,
+    fun.max = max,
+    fun = median
+  )
+```
+
+##### 2. What does geom_col() do? How is it different to geom_bar()?
+
+- geom_col() makes the height of the bars represent values in the data. Uses state_identity() by default.
+
+- geom_bar() makes the height of bars proportional to number of cases in each group (ie. can show frequency if given only an x). Uses stat_count() by default.
+
+##### 3. Most geoms and stats come in pairs that are almost always used in concert. Read through the documentation and make a list of all the pairs. What do they have in common?
+
+The geoms and stats tend to have the same or similar names or are identity. Also, the stat used in concert with the geom is usually the default for the geom.
+
+```{r}
+s <- c("", "", "", "*", "*", "*", "", "*", "*", "",
+       "", "*", "", "", "", "", "", "", "", "",
+       "*", "*", "*", "", "", "", "*", "", "", "",
+       "*", "*")
+geom <- c("abline, hline, vline", "bar", "col", "bin2d", "boxplot", "contour", "count", "density", "density_2d", "dotplot", "errorbarh", "hex", "freqpoly", "histogram", "jitter", "crossbar, errorbar, inerange, pointrange", "map", "path, line, step", "point", "polygon", "qq_line", "qq", "quantile", "ribbon, area", "rug", "segment, curve", "smooth", "spoke", "label, text", "raster, rect, tile", "violin", "sf, sf_label, sf_text")
+
+stat <- c("", "count", "stack", "bin2d", "boxplot", "contour", "sum", "density", "density2d", "", "bin", "*", "bin", "bin", "identity", "identity", "identity", "identity", "identity", "identity", "qq_line", "qq", "quantile", "identity", "identity", "identity", "smooth", "identity", "identity", "identity", "violin","sf")
+
+desc <- c("reference lines: horizontal, vertical, diagonal", "bar chart", "bar chart", "heatmap of 2d bin counts", "a box and whiskers plot", "2d contous of a 3d surface", "count overlapping points", "smooth density estimates", "contours of a 2d desnsity estimate", "dot plot", "horizontal error bars", "hexagonal heatmap of 2d bin counts", "frequency polygons", "histogram", "jittered points", "vertical intervals: lines, crossbars, errorbars", "polygons from a reference map", "connect observations", "scatterplot", "polygons", "quantile-quantile plot", "quantile-quantile plot", "quantile regression", "ribbons and area plots", "rug plots in the margins", "line segments and curves", "smoothed conditional means", "line segments parameterized by location, direction, and distance", "text", "rectangles", "violin plot", "visualize objects")
+
+table <- data.frame(s=s, geom=geom, default_stat=stat)
+description <- data.frame(geom=geom, description=desc)
+table
+```
+
+##### 4. What variables does stat_smooth() compute? What parameters control its behaviour?
+
+computes:
+
+- y - predicted value
+
+- ymin - lower pointwise confidence interval around mean
+
+- ymax - upper pointwise confidence interval around mean
+
+- se - standard error
+
+parameters: 
+
+- method - smoothing method to use(ex. lm, glm, gam, loess, etc.)
+
+- formula - formula to use in smoothing function
+
+##### 5. In our proportion bar chart, we need to set group = 1. Why? In other words what is the problem with these two graphs?
+
+The proportion of each is calculated per group rather than for the whole data set.Group = 1 will specify that there is only 1 group despite the multiple labels and will calculate the proportion appropriately.
+
+```{r cars}
+ggplot(data = diamonds)+ 
+  geom_bar(mapping = aes(x=cut, y=..prop..))
+
+ggplot(data = diamonds)+ 
+  geom_bar(mapping = aes(x=cut, fill = color, y=..prop..))
+
+ggplot(data = diamonds)+ 
+  geom_bar(mapping = aes(x=cut, y=..prop.., group=1))
+```

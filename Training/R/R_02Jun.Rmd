@@ -1,0 +1,147 @@
+---
+title: "Introduction to R"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Syntax and Data Structures
+### 1. Try changing the value of the variable x to 5. What happens to number?
+
+Number changes from 8 to 10.
+
+```{r}
+x <- 5 #3
+y <- 5
+cat("y:", y, "\n")
+number <- x+y
+cat("number: ", number, "\n")
+```
+
+### 2. Now try changing the value of variable y to contain the value 10. What do you need to do, to update the variable number?
+
+You need to rerun the line 'number <- x+y'.
+
+```{r}
+x <- 5 #3
+y <- 10
+cat("y:", y, "\n")
+number <- x+y
+cat("number: ", number, "\n")
+```
+
+### Tips on Variable names
+
+- avoid names staring with a number
+- R is case sensitive
+- make names explicit but not too long
+- avoid names of fundamental functions
+- avoid dots
+- use nouns for object names and verbs for function names
+
+### Data Types
+
+- "numeric" for any numerical value
+- "character" for text values, denoted by using quotes around the value
+- "integer" for integer numbers
+- "logical" for booleans
+- "complex" to represent complex numbers with real and imaginary parts
+- "raw" ???
+
+### Data Structures
+
+- single value
+- vectors (c) - all values must be of the same data type
+- factors (factor) - stores categorical data (each category is a factor level and each level is assigned an integer value)
+- matrices (matrix) - collection of vectors of same length and identical datatype
+- data frames (data.frame) - de facto data structure for tabular data
+- lists (list) - can hold any number of types
+
+# Functions and Arguments
+### Another commonly used base function is mean(). Use this function to calculate an average for the glenthds vector.
+
+```{r}
+glengths <- c(4.6, 3000, 50000)
+mean(glengths)
+```
+
+### Packages and Libraries
+
+**packages**: collections of R functions, data, and compiled code in a well-defined format
+
+**libraries**: directories where packages are stored
+
+```{r}
+#check what packages are loaded in R session
+sessionInfo() 
+```
+
+# Data Wrangling
+
+```{r}
+metadata <- read.csv(file="../datasets/mouse_exp_design.csv")
+head(metadata)
+str(metadata)
+```
+
+### Data Inspection Functions
+
+- all data structures - content display
+  - str(): compact display of data contents (env.)
+  - class(): data type of vectors and data structure of data frames, matrices, and lists
+  - summary(): detailed display, including descriptive statistics, frequencies
+  - head(): print the beginning entries for the variable
+  - tail(): print the end entries for the variable
+- vector and factor variables
+  - length(): returns the number of elements in object
+- data frame and matrix variables
+  - dim(): returns dimensions of dataset
+  - nrow() returns number of rows in dataset
+  - ncol(): returns number of columns in dataset
+  - rownames(): returns the row names in dataset
+  - colnames(): returns the column names in dataset
+  
+### Indexes and Sequences
+```{r}
+#vectors
+age <- c(15, 22, 45, 53, 73, 81)
+age[5]
+age[-5]
+idx <- c(3,5,6)
+age[idx]
+age[1:4]
+age[age > 50]
+
+#dataframe
+metadata <- read.csv(file="../datasets/mouse_exp_design.csv")
+metadata[1,3]
+metadata[3,]
+metadata[,3]
+metadata[,1:2]
+metadata[c(1,3,6),]
+metadata[1:33,"celltype"]
+metadata$genotype
+metadata$genotype[1:5]
+metadata[,c("genotype", "celltype")]
+metadata[c("sample10", "sample12"),]
+
+#lists
+glengths <- c(4.6, 3000, 50000)
+species <- c("ecoli", "human", "corn")
+df <- data.frame(species, glengths)
+list <- list(species, df, 5)
+list[[2]]
+```
+
+### Subsetting Data
+
+returns rows of a dataframe for which the logical expression is true
+```{r}
+sub_meta <- subset(metadata, celltype == "typeA")
+
+#writing to file
+write.csv(sub_meta, file="../datasets/subset_meta.csv") #dataframe
+write(glengths, file="../datasets/genome_length.txt", ncolumns=1)
+```
