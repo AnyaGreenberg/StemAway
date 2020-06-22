@@ -16,7 +16,11 @@ data_norm <- call.exprs(data, "mas5")
 report_simple_norm <- qc(data, data_norm)
 plot(report_simple_norm)
 
-wd# Data Preprocessing
+# Data Preprocessing
+raw <- as.data.frame(exprs(data))
+colnames(raw) <- sub(".CEL.gz", "", colnames(raw))
+write.csv(raw, "./data/raw.csv")
+
 norm <- gcrma(data, normalize=TRUE)
 norm <- as.data.frame(exprs(norm))
 colnames(norm) <- sub(".CEL.gz", "", colnames(norm))
@@ -60,12 +64,43 @@ ggplot(nuse_raw, aes(median))+
   xlab("Median")+ ylab("Frequency")+ ggtitle("NUSE Histogram (Raw)")+
   theme_bw()
 
-## PCA
+## PCA - normal
+norm <- read.csv("./data/norm.csv")
+row.names(norm) <- norm$X
+norm <- norm[-1]
+
 pca <- prcomp(norm, center=FALSE, scale=FALSE)
 plot(pca, type="l", main="Variation by PC")
 
-pc <- data.frame(PC1=pca$x[,1], PC2=pca$x[,2])
+pc <- data.frame(PC1=pca$rotation[,1], PC2=pca$rotation[,2])
+
+cancer <- NULL
+for (i in 1:(length(pc[1]))) {
+  if (colnames(raw)[i] < "GSM215083") {
+    cancer[i] <- "cancer"
+  }	else {
+    cancer[i] <- "normal"
+  }
+}
+pc$Type <- cancer
+
 ggplot(pc)+
-  geom_point(aes(x=PC1, y=PC2))+
-  xlab("PC1")+ ylab("PC2")+ ggtitle("PCA")+
-  theme_bw()
+  geom_point(aes(x=PC1, y=PC2, colour=Type))+
+  xlab("PC1")+ ylab("PC2")+ ggtitle("PCA (Normal)")+
+  theme_bw()+ scale_color_brewer("Accent")
+
+## PCA - raw
+raw <- read.csv("./data/raw.csv")
+row.names(raw) <- raw$X
+raw <- raw[-1]
+
+pca <- prcomp(raw, center=FALSE, scale=FALSE)
+plot(pca, type="l", main="Variation by PC")
+
+pc <- data.frame(PC1=pca$rotation[,1], PC2=pca$rotation[,2])
+pc$Type <- cancer
+
+ggplot(pc)+
+  geom_point(aes(x=PC1, y=PC2, colour=Type))+
+  xlab("PC1")+ ylab("PC2")+ ggtitle("PCA (Raw)")+
+  theme_bw()+ scale_color_brewer("Accent")
