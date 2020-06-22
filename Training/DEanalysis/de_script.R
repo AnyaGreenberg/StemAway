@@ -5,7 +5,7 @@ library(RColorBrewer)
 library(DESeq2)
 library(pheatmap)
 
-setwd("C:/Users/durbe/Documents/repositories/StemAway/Training/R/DEanalysis")
+setwd("C:/Users/durbe/Documents/repositories/StemAway/Training/DEanalysis")
 ## load data
 
 data <- read.table("./data/Mov10_full_counts.txt", header=T, row.names=1)
