@@ -1,9 +1,10 @@
-setwd("C:/Users/durbe/Documents/repositories/StemAway/Week3")
+setwd("C:/Users/durbe/Documents/repositories/StemAway/Deliverables")
 library(affy)
 library(simpleaffy)
 library(gcrma)
 library(affyPLM)
 library(ggplot2)
+library(pheatmap)
 
 data <- ReadAffy(compress=TRUE, celfile.path="./data/raw/")
 
@@ -16,6 +17,7 @@ data_norm <- call.exprs(data, "mas5")
 report_simple_norm <- qc(data, data_norm)
 plot(report_simple_norm)
 
+
 # Data Preprocessing
 raw <- as.data.frame(exprs(data))
 colnames(raw) <- sub(".CEL.gz", "", colnames(raw))
@@ -25,6 +27,7 @@ norm <- gcrma(data, normalize=TRUE)
 norm <- as.data.frame(exprs(norm))
 colnames(norm) <- sub(".CEL.gz", "", colnames(norm))
 write.csv(norm, "./data/norm.csv")
+
 
 # Visualization
 pset_norm <- fitPLM(data, background=FALSE, background.method="GCRMA")
@@ -64,43 +67,37 @@ ggplot(nuse_raw, aes(median))+
   xlab("Median")+ ylab("Frequency")+ ggtitle("NUSE Histogram (Raw)")+
   theme_bw()
 
-## PCA - normal
+## PCA
 norm <- read.csv("./data/norm.csv")
 row.names(norm) <- norm$X
 norm <- norm[-1]
 
-pca <- prcomp(norm, center=FALSE, scale=FALSE)
-plot(pca, type="l", main="Variation by PC")
-
-pc <- data.frame(PC1=pca$rotation[,1], PC2=pca$rotation[,2])
-
-cancer <- NULL
-for (i in 1:(length(pc[1]))) {
-  if (colnames(raw)[i] < "GSM215083") {
-    cancer[i] <- "cancer"
-  }	else {
-    cancer[i] <- "normal"
-  }
-}
-pc$Type <- cancer
-
-ggplot(pc)+
-  geom_point(aes(x=PC1, y=PC2, colour=Type))+
-  xlab("PC1")+ ylab("PC2")+ ggtitle("PCA (Normal)")+
-  theme_bw()+ scale_color_brewer("Accent")
-
-## PCA - raw
 raw <- read.csv("./data/raw.csv")
 row.names(raw) <- raw$X
 raw <- raw[-1]
 
-pca <- prcomp(raw, center=FALSE, scale=FALSE)
-plot(pca, type="l", main="Variation by PC")
+cancer <- factor(c(rep("control",32), rep("cancer",32)))
 
-pc <- data.frame(PC1=pca$rotation[,1], PC2=pca$rotation[,2])
-pc$Type <- cancer
+ta <- t(norm) 
+pca <- prcomp(ta, center=FALSE, scale=FALSE)
+pc <- as.data.frame(pca$x)
+ggplot(pc, aes(x=PC1, y=PC2, color=cancer))+
+  geom_point()+
+  ggtitle("PCA after GCRMA Normalization")+ theme_bw()
 
-ggplot(pc)+
-  geom_point(aes(x=PC1, y=PC2, colour=Type))+
-  xlab("PC1")+ ylab("PC2")+ ggtitle("PCA (Raw)")+
-  theme_bw()+ scale_color_brewer("Accent")
+ta <- t(raw) 
+pca <- prcomp(ta, center=FALSE, scale=FALSE)
+pc <- as.data.frame(pca$x)
+ggplot(pc, aes(x=PC1, y=PC2, color=cancer))+
+  geom_point()+
+  ggtitle("PCA before GCRMA Normalization")+ theme_bw()
+
+## heatmap
+dismat <- 1-cor(norm)
+colnames(dismat) <- factor(c(rep("control",32), rep("cancer",32)))
+pheatmap(dismat, main="Hierarchical Clustering Heatmap after GCRMA Normalization")
+
+dismat <- 1-cor(raw)
+colnames(dismat) <- factor(c(rep("control",32), rep("cancer",32)))
+pheatmap(dismat, main="Hierarchical Clustering Heatmap before GCRMA Normalization")
+
