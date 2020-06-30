@@ -54,14 +54,15 @@ efitC <- eBayes(fitC)
 hist(efitC$p.value[,1], main="Cancer vs. Control")
 
 ## compute gene list
-tT05 <- topTable(efitC, adjust.method="fdr", p.value=0.05, genelist=genelist, n=100)
-write.csv(tT05, "./data/topT_05.csv")
+tT <- topTable(efitC, adjust.method="fdr", genelist=genelist, n=100)
+row.names(tT) <- tT$ID
+tT <- subset(tT, select=c("ID", "P.Value", "adj.P.Val", "logFC"))
+colnames(tT)[1] <- "SYMBOL"
+write.csv(tT, "./data/top.csv")
 
-tT1e5 <- topTable(efitC, adjust.method="fdr", p.value=1e-5, genelist=genelist, n=100)
-write.csv(tT1e5, "./data/topT_1e-5.csv")
 
 ## volcano plot -- made with all data
-vp <- topTable(efitC, adjust.method="fdr", genelist=genelist, n=52488)
+vp <- topTable(efitC, adjust="fdr", genelist=genelist, n=52488)
 
 volcano_plot <- EnhancedVolcano(vp,
                                 lab=vp$ID,
@@ -75,3 +76,11 @@ volcano_plot <- EnhancedVolcano(vp,
                                 subtitle="alpha = 0.01")
 
 volcano_plot
+
+vp <- na.omit(vp)
+row.names(vp) <- vp$ID
+vp <- vp[-1]
+write.csv(vp, "./data/vp.csv")
+
+length(rownames(vp[which(vp$adj.P.Val < 0.01),]))
+length(rownames(vp[which(vp$adj.P.Val < 0.05),]))
