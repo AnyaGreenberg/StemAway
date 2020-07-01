@@ -32,18 +32,20 @@ pheno <- read.table("./meta/pheno.txt", sep="\t", header=TRUE)
 s <- summary(pheno)
 
 # 9. read in the .CEL files, introduce phenotypic data into the created expression set using the argument pData(expressionSet) <- new("AnnotatedDataFrame", data=object)
-data <- ReadAffy(compress=TRUE, celfile.path="./data/raw/")
-raw <- exprs(data)
-colnames(raw) <- sub(".CEL.gz", "", colnames(raw))
-all(rownames(pheno)==colnames(raw)) 
+filt <- read.csv("./data/filt.csv")
+row.names(filt) <-  filt$X
+filt <- filt[c(-1,-2)]
+filt <- as.matrix(filt)
+
+all(rownames(pheno)==colnames(filt)) 
 
 ### METHOD 1
 metadata <- data.frame(labelDescription=c("Location of sample", "Size of sample", "Case/Control Status"), row.names=c("location", "size", "score"))
 phenoData <- new("AnnotatedDataFrame", data=pheno, varMetadata=metadata)
-exprSet <- ExpressionSet(assayData=raw, phenoData=phenoData, annotation="hgu133plus2")
+exprSet <- ExpressionSet(assayData=filt, phenoData=phenoData, annotation="hgu133plus2")
 
 ### METHOD 2
-minSet <- ExpressionSet(assayData=raw, annotation="hgu133plus2")
+minSet <- ExpressionSet(assayData=filt, annotation="hgu133plus2")
 pData(minSet) <- pheno
 
   
