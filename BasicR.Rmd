@@ -1,0 +1,45 @@
+---
+title: "Basic Programming in R"
+author: "Anya Greenberg"
+date: "7/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Overview
+
+1. R and RStudio
+2. R syntax
+3. Programming Concepts in R
+4. Dealing with files
+5. Packages and Libraries
+6. Help! I don't know what I'm doing!
+
+
+- Introduction
+  - R as a statistical Programming Language
+  - Interacting with R
+    - Command Line Interface
+    - RStudio
+    - + vs. >
+- R Syntax
+  - comments
+  - basic arithmetic
+  - variables and assignment operator
+  - functions
+    - get/set working director
+- Programming     
+  - data types
+  - data structures
+  - conditionals
+  - loops
+- reading/writing files
+- packages and libraries
+- help! I don't know what I'm doing
+  - ?function
+  - online R documentation
+  - troubleshooting errors
+  - stack exchange (sessionInfo())

@@ -1,0 +1,23 @@
+---
+title: "Introduction to R for Visualization"
+author: "Anya Greenberg"
+date: "7/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+- plots overview maybe?
+  - bar plots
+  - histograms
+  - boxplots
+  - never ever use a pie chart for presenting data seriously
+- ggplot
+  - list of possible plots
+- heatmap
+- PCA
+- saving files
+  - coding
+  - from RStudio
