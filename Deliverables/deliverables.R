@@ -1,7 +1,7 @@
 setwd("C:/Users/durbe/OneDrive/Documents/ReposExtras/STEM-Away/June2020")
 library(affy)
 library(affyPLM)
-library(sva) # 'genefilter' package cannot be loaded
+library(sva)
 library(AnnotationDbi)
 library(hgu133plus2.db)
 library(simpleaffy)
