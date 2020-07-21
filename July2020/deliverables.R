@@ -48,7 +48,7 @@ NUSE(pset, main="NUSE (Raw)", las=2)
 # raw
 raw <- as.data.frame(exprs(gse))
 par(mai=c(3.5,1,1,1))
-boxplot(gse, main="Boxplot Raw Data", ylab="Probe Intensities", las=2)
+boxplot(raw, main="Boxplot Raw Data", ylab="Probe Intensities", las=2)
 # mas5
 mas5 <- mas5(gse)
 par(mai=c(3.5,1,1,1))
