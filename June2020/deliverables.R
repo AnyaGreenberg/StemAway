@@ -43,7 +43,6 @@ ggplot(nuse, aes(Median))+ geom_histogram()+ xlab("Median")+ ylab("Frequency")+ 
 
 ##### DATA PREPROCESSING: BACKGROUND CORRECTION + NORMALIZATION #####
 gcrmaN <- gcrma(data)
-arrayQualityMetrics(gcrmaN, "./QC/arrayQyalityMetrics-gcrma/", force=TRUE, do.logtransform=TRUE)
 gcrmaNdf <- as.data.frame(exprs(gcrmaN))
 colnames(gcrmaNdf) <- sub(".CEL.gz", "", colnames(gcrmaNdf))
 write.csv(gcrmaNdf, "./Data/Normalized/gcrma.csv")
