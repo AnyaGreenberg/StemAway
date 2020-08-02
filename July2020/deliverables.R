@@ -237,3 +237,33 @@ hm(fitGcrma, filtGcrma, geneGcrma, "Heatmap gcrma")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
