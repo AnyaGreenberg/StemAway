@@ -1,4 +1,17 @@
-setwd("C:/Users/durbe/OneDrive/Documents/ReposExtras/STEM-Away/July2020/")
+setwd("C:/Users/durbe/OneDrive/Documents/ReposExtras/STEM-Away/July2020/final")
+
+##### PHENO DATA #####
+library(GEOquery)
+gse <- getGEO(filename="./GEODatasets/AML/GSE97485_series_matrix.txt.gz")
+
+# 2. copy phenotype data and transpose into a new sheet
+pheno <- gse@phenoData@data
+
+# 3. remove non-relevant columns/rows
+meta <- factor(rep(c("cancer", "normal"), c(20,10)))
+names(meta) <- row.names(pheno)
+
+
 
 ##### WEEK TWO - WEEK THREE #####
 library(affy)
@@ -11,19 +24,10 @@ library(sva)
 library(ggplot2)
 library(pheatmap)
 
-
-gse32323 <- ReadAffy(compress=T, celfile.path="./data/raw/GSE32323/")
-gse8671 <- ReadAffy(compress=T, celfile.path="./data/raw/GSE8671/") 
-gse <- merge(gse8671, gse32323)
-saveRDS(gse, "./data/gse.rds")
-
+gse <- ReadAffy(compress=T, celfile.path="./GEODatasets/AML/GSE97485/")
 
 ### QUALITY CONTROL - before normalization
 arrayQualityMetrics(gse, "./QC/arrayQualityMetrics/", force=T, do.logtransform=T)
-
-# simpleaffy
-sa <- qc(gse)
-plot(sa)
 
 # affyQCReport
 QCReport(gse, "./QC/affyQCReport.pdf")
@@ -47,42 +51,21 @@ NUSE(pset, main="NUSE", las=2)
 par(mai=c(3.5,1,1,1))
 boxplot(gse, main="Boxplot Raw Data", ylab="Probe Intensities", las=2, col=c("red", "orange", "yellow", "green", "blue", "purple"))
 
-mas5 <- mas5(gse)
-saveRDS(mas5, "./QC/data/norm/mas5.rds")
-par(mai=c(3.5,1,1,1))
-boxplot(log2(exprs(mas5)), main="Boxplot mas5 Data", ylab="Probe Intensities", las=2, col=c("red", "orange", "yellow", "green", "blue", "purple"))
-
 rma <- rma(gse)
 saveRDS(rma, "./QC/data/norm/rma.rds")
 par(mai=c(3.5,1,1,1))
 boxplot(exprs(rma), main="Boxplot rma Data", ylab="Probe Intensities", las=2, col=c("red", "orange", "yellow", "green", "blue", "purple"))
 
+mas5 <- mas5(gse)
 gcrma <- gcrma(gse)
-saveRDS(gcrma, "./QC/data/norm/gcrma.rds")
-par(mai=c(3.5,1,1,1))
-boxplot(exprs(gcrma), main="Boxplot gcrma Data", ylab="Probe Intensities", las=2, col=c("red", "orange", "yellow", "green", "blue", "purple"))
 
 
 #format colnames
-temp <- strsplit(colnames(mas5), "_")
+temp <- strsplit(colnames(rma), "_")
 for (i in 1:98) {
-  colnames(mas5)[i] <- temp[[i]][1]
+  colnames(rma)[i] <- temp[[i]][1]
 }
-colnames(mas5) <- sub(".CEL.gz", "", colnames(mas5))
-
-
-### BATCH CORRECTION
-meta <- read.csv("./data/metadata.csv")
-design <- model.matrix(~CN, meta)
-
-combatMas5 <- ComBat(log2(exprs(mas5)), meta$BATCH, design)
-write.csv(combatMas5,"./QC/data/bc/mas5.csv")
-
-combatRma <- ComBat(exprs(rma), meta$BATCH, design)
-write.csv(combatRma,"./QC/data/bc/rma.csv")
-
-combatGcrma <- ComBat(exprs(gcrma), meta$BATCH, design)
-write.csv(combatGcrma,"./QC/data/bc/gcrma.csv")
+colnames(rma) <- sub(".CEL.gz", "", colnames(rma))
 
 
 ### VISUALIZATION
@@ -98,14 +81,7 @@ pca_plot <- function(d, t) {
 }
 
 pca_plot(exprs(gse), "PCA before Normalization")
-
-pca_plot(exprs(mas5), "PCA mas5 Normalization")
 pca_plot(exprs(rma), "PCA rma Normalization")
-pca_plot(exprs(gcrma), "PCA gcrma Normalization")
-
-pca_plot(combatMas5, "PCA mas5 Batch Correction")
-pca_plot(combatRma, "PCA rma Batch Correction")
-pca_plot(combatGcrma, "PCA gcrma Batch Correction")
 
 
 ## HEATMAP
@@ -116,13 +92,8 @@ heatmap <- function(d,t) {
   pheatmap(dismat, cluster_rows=F, annotation_col=group, main=t)
 }
 
-heatmap(exprs(mas5), "Hierarchical Clustering Heatmap mas5 Normalization")
 heatmap(exprs(rma), "Hierarchical Clustering Heatmap rma Normalization")
-heatmap(exprs(gcrma), "Hierarchical Clustering Heatmap gcrma Normalization")
-
-heatmap(combatMas5, "Hierarchical Clustering Heatmap mas5 Batch Correction")
 heatmap(combatRma, "Hierarchical Clustering Heatmap rma Batch Correction")
-heatmap(combatGcrma, "Hierarchical Clustering Heatmap gcrma Batch Correction")
 
 
 
@@ -135,18 +106,11 @@ library(ggplot2)
 library(pheatmap)
 
 
-mas5 <- read.csv("./QC/data/bc/mas5.csv")
 rma <- read.csv("./QC/data/bc/rma.csv")
-gcrma <- read.csv("./QC/data/bc/gcrma.csv")
-
-row.names(mas5) <- mas5$X
-mas5 <- mas5[-1]
 
 row.names(rma) <- rma$X
 rma <- rma[-1]
 
-row.names(gcrma) <- gcrma$X
-gcrma <- gcrma[-1]
 
 ### ANNOTATION
 annot <- function(d) {
@@ -161,9 +125,8 @@ annot <- function(d) {
   return(d)
 }
 
-annotMas5 <- annot(mas5)
 annotRma <- annot(rma)
-annotGcrma <- annot(gcrma)
+
 
 ### GENE FILTERING
 filt <- function(d) {
@@ -173,13 +136,10 @@ filt <- function(d) {
   return(temp)
 }
 
-filtMas5 <- filt(annotMas5$datETcollapsed)
 filtRma <- filt(annotRma$datETcollapsed)
-filtGcrma <- filt(annotGcrma$datETcollapsed)
 
 
 ### LIMMA
-meta <- read.csv("./Data/metadata.csv")
 type <- factor(meta$CN, levels = c('Normal','Cancer'), ordered = F)
 row.names(meta) <- meta$X.Sample_geo_accession
 design <- model.matrix(~0+type, meta)
@@ -195,35 +155,20 @@ limmaFit <- function(d) {
   return(fit)
 }
 
-geneMas5 <- rownames(filtMas5)
 geneRma <- rownames(filtRma)
-geneGcrma <- rownames(filtGcrma)
-
-fitMas5 <- limmaFit(filtMas5)
 fitRma <- limmaFit(filtRma)
-fitGcrma <- limmaFit(filtGcrma)
 
-tTMas5 <- topTable(fitMas5, coef=1, p.value=0.05, sort="P", genelist=geneMas5, number=max)
-write.table(tTMas5, "./DGE/data/mas5.txt")
 tTRma <- topTable(fitRma, coef=1, p.value=0.05, sort="P", genelist=geneRma, number=max)
 write.table(tTRma, "./DGE/data/rma.txt")
-tTGcrma <- topTable(fitGcrma, coef=1, p.value=0.05, sort="P", genelist=geneGcrma, number=max)
-write.table(tTGcrma, "./DGE/data/gcrma.txt")
 
-length(rownames(tTMas5[which(tTMas5$adj.P.Val < 0.05),]))
 length(rownames(tTRma[which(tTRma$adj.P.Val < 0.05),]))
-length(rownames(tTGcrma[which(tTGcrma$adj.P.Val < 0.05),]))
+
 
 ## VOLCANO PLOT
-EnhancedVolcano(tTMas5, lab=row.names(tTMas5), x="logFC", y="adj.P.Val", 
-                pointSize=1, legendLabSize=10, labSize=3.0,
-                title="Volcano Plot", subtitle="mas5 Normalization")
 EnhancedVolcano(tTRma, lab=row.names(tTRma), x="logFC", y="adj.P.Val", 
                 pointSize=1, legendLabSize=10, labSize=3.0,
                 title="Volcano Plot", subtitle="rma Normalization")
-EnhancedVolcano(tTGcrma, lab=row.names(tTGcrma), x="logFC", y="adj.P.Val", 
-                pointSize=1, legendLabSize=10, labSize=3.0,
-                title="Volcano Plot", subtitle="gcrma Normalization")
+
 
 ## HEATMAP
 hm <- function(dFit, dFilt, gl, t) {
@@ -235,14 +180,10 @@ hm <- function(dFit, dFilt, gl, t) {
   pheatmap(input, main=t, cluster_rows=F, annotation_col=group)
 }
 
-hm(fitMas5, filtMas5, geneMas5, "Heatmap mas5")
 hm(fitRma, filtRma, geneRma, "Heatmap rma")
-hm(fitGcrma, filtGcrma, geneGcrma, "Heatmap gcrma")
 
 
-
-##### WEEK FIVE #####
-library(org.Hs.eg.db)
+##### WEEK FIVE #####library(org.Hs.eg.db)
 library(topGO)
 library(clusterProfiler)
 library(pathview)
@@ -252,9 +193,7 @@ library(msigdbr)
 library(enrichplot)
 
 
-mas5 <- read.table("./DGE/data/mas5.txt")
 rma <- read.table("./DGE/data/rma.txt")
-gcrma <- read.table("./DGE/data/gcrma.txt")
 
 ### FUNCTIONAL ANALYSIS
 ## DEG VECTOR
@@ -266,13 +205,8 @@ genelist <- function(d) {
   return(DEG.gene)
 }
 
-mGene <- genelist(mas5)
 rGene <- genelist(rma)
-gGene <- genelist(gcrma)
-
-DEG.m <- AnnotationDbi::select(org.Hs.eg.db, keys=names(mGene), columns=c("ENTREZID"), keytype="SYMBOL")
 DEG.r <- AnnotationDbi::select(org.Hs.eg.db, keys=names(rGene), columns=c("ENTREZID"), keytype="SYMBOL")
-DEG.g <- AnnotationDbi::select(org.Hs.eg.db, keys=names(gGene), columns=c("ENTREZID"), keytype="SYMBOL")
 
 
 # GENE ONTOLOGY
@@ -281,17 +215,9 @@ eGoD <- function(d, o, f) {
   write.csv(ego, f)
 }
 
-eGoD(DEG.m, "CC", "./FA/data/GO/mas5CC.csv")
-eGoD(DEG.m, "BP", "./FA/data/GO/mas5BP.csv")
-eGoD(DEG.m, "MF", "./FA/data/GO/mas5MF.csv")
-
 eGoD(DEG.r, "CC", "./FA/data/GO/rmaCC.csv")
 eGoD(DEG.r, "BP", "./FA/data/GO/rmaBP.csv")
 eGoD(DEG.r, "MF", "./FA/data/GO/rmaMF.csv")
-
-eGoD(DEG.g, "CC", "./FA/data/GO/gcrmaCC.csv")
-eGoD(DEG.g, "BP", "./FA/data/GO/gcrmaBP.csv")
-eGoD(DEG.g, "MF", "./FA/data/GO/gcrmaMF.csv")
 
 egoPlot  <- function(d, o, t) {
   ego <- enrichGO(d$ENTREZID, org.Hs.eg.db, ont=o, readable=F)
@@ -299,17 +225,9 @@ egoPlot  <- function(d, o, t) {
   barplot(egoR, title=t)
 }
 
-egoPlot(DEG.m, "CC", "mas5 CC")
-egoPlot(DEG.m, "BP", "mas5 BP")
-egoPlot(DEG.m, "MF", "mas5 MF")
-
 egoPlot(DEG.r, "CC", "rma CC")
 egoPlot(DEG.r, "BP", "rma BP")
 egoPlot(DEG.r, "MF", "rma MF")
-
-egoPlot(DEG.g, "CC", "gcrma CC")
-egoPlot(DEG.g, "BP", "gcrma BP")
-egoPlot(DEG.g, "MF", "gcrma MF")
 
 # OPTIONAL***
 ggoPlot <- function(d, o, l, t) {
@@ -324,9 +242,7 @@ keggPlot <- function(d, gene, c, t) {
   dotplot(ek, title=t)
 }
 
-keggPlot(DEG.m, mGene, T, "mas5 KEGG")
 keggPlot(DEG.r, rGene, T, "rma KEGG")
-keggPlot(DEG.g, gGene, T, "gcrma KEGG")
 
 
 ### GENE CONCEPT NETWORK
@@ -337,31 +253,22 @@ cnetPlot <- function(d, gene, c) {
   cnetplot(edR, foldChange=gene, categorySize="pvalue", colorEdge=T, circular=c)
 }
 
-cnetPlot(DEG.m, mGene, F)
-cnetPlot(DEG.m, mGene, T)
-
 cnetPlot(DEG.r, rGene, F)
 cnetPlot(DEG.r, rGene, T)
 
-cnetPlot(DEG.g, gGene, F)
-cnetPlot(DEG.g, gGene, T)
-
 
 ## TRANSCRIPTIONAL FACTOR ANALYSIS
-msig <- msigdbr(species="Homo sapiens", category="C3")
-c3 <- msig %>% select(gs_name, entrez_gene)
-
 tfa <- function(d, gene) {
-  e <- enricher(DEG.r$ENTREZID, TERM2GENE=c3)
+  c3 <- read.gmt("./FA/data/c3.gmt")
+  e <- enricher(DEG.m$ENTREZID, TERM2GENE=c3)
   temp <- setReadable(e, org.Hs.eg.db, keyType="ENTREZID")
-  cnetplot(temp, foldChange=gene, categorySize="pvalue", colorEdge=T, circular=T)
+  cnetplot(temp, foldChange=gene, categorySize="pvalue", colorEdge=T)
 }
 
-tfa(DEG.m, mGene)
-tfa(DEG.r, rGene) #error - dataframe should contain at least two columns 
-tfa(DEG.g, gGene)
+tfa(DEG.r, rGene)
+
 
 # EXTERNAL TOOLS
-write(names(mGene), "./FA/data/genelist/mas5_up.txt")
+
 write(names(rGene), "./FA/data/genelist/rma_up.txt")
-write(names(gGene), "./FA/data/genelist/gcrma_up.txt")
+write(names(rGeneA), "./FA/data/genelist/rma_all.txt")
