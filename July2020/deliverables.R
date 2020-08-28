@@ -14,6 +14,7 @@ library(pheatmap)
 
 gse32323 <- ReadAffy(compress=T, celfile.path="./data/raw/GSE32323/")
 gse8671 <- ReadAffy(compress=T, celfile.path="./data/raw/GSE8671/") 
+# gse <- ReadAffy(compress=T, celfile.path="./data/raw/GSE21369/") 
 gse <- merge(gse8671, gse32323)
 saveRDS(gse, "./data/gse.rds")
 
@@ -64,11 +65,11 @@ boxplot(exprs(gcrma), main="Boxplot gcrma Data", ylab="Probe Intensities", las=2
 
 
 #format colnames
-temp <- strsplit(colnames(mas5), "_")
-for (i in 1:98) {
-  colnames(mas5)[i] <- temp[[i]][1]
-}
-colnames(mas5) <- sub(".CEL.gz", "", colnames(mas5))
+# temp <- strsplit(colnames(mas5), "_")
+# for (i in 1:98) {
+#   colnames(mas5)[i] <- temp[[i]][1]
+# }
+# colnames(mas5) <- sub(".CEL.gz", "", colnames(mas5))
 
 
 ### BATCH CORRECTION
@@ -352,9 +353,9 @@ msig <- msigdbr(species="Homo sapiens", category="C3")
 c3 <- msig %>% select(gs_name, entrez_gene)
 
 tfa <- function(d, gene) {
-  e <- enricher(DEG.r$ENTREZID, TERM2GENE=c3)
+  e <- enricher(d$ENTREZID, TERM2GENE=c3)
   temp <- setReadable(e, org.Hs.eg.db, keyType="ENTREZID")
-  cnetplot(temp, foldChange=gene, categorySize="pvalue", colorEdge=T, circular=T)
+  cnetplot(temp, foldChange=gene, categorySize="pvalue", colorEdge=T, circular=F)
 }
 
 tfa(DEG.m, mGene)

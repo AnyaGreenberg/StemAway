@@ -23,11 +23,11 @@ msigS <- msig %>% select(gs_name, entrez_gene)
 
 gseaM <- GSEA(mGene, TERM2GENE=msigS)
 gseaR <- GSEA(rGene, TERM2GENE=msigS)
-gseaG <- GSEA(gGene, TERM2GENE=msigS)
+gseaG <- GSEA(gGene, TERM2GENE=msigS, eps=0)
 
 gseaplot2(gseaM, geneSetID=1:5, pvalue_table=T)
 gseaplot2(gseaR, geneSetID=1:5, pvalue_table=T)
-gseaplot2(gseaG, geneSetID=1:5, pvalue_table=T)
+gseaplot2(gseaG, geneSetID=c(2,3,8,14)) 
 
 
 e <- enricher(names(mGene), TERM2GENE=msigS)
