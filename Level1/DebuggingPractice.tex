@@ -1,0 +1,492 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Debugging Practice Modules with Solutions},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\title{Debugging Practice Modules with Solutions}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+\hypertarget{please-reach-out-on-the-stem-away-forums-with-any-questions.}{%
+\paragraph{Please reach out on the STEM-Away forums with any
+questions.}\label{please-reach-out-on-the-stem-away-forums-with-any-questions.}}
+
+These modules will hopefully help you get a handle on debugging code.
+They are intended as an introduction to debugging to help you get a
+sense for the process. If you like, you can download the accompanying R
+script, here, and try debugging it without the modules.
+
+The process of debugging is a huge component of programming and it's
+important you know how to deal with errors in your code. However, not
+all errors will return error messages telling you what's wrong. Let me
+introduce the three types of errors you should be aware of:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Syntax errors}: These errors are like ``spelling and grammar''
+  errors in English. They concern the \emph{syntax} of the programming
+  language you're using. For instance, forgetting to close a parenthesis
+  when using a function:
+\end{enumerate}
+
+These are the easiest to handle since they output error messages telling
+you what's wrong, and most times, \textbf{where} it's is wrong.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  \textbf{Semantic errors}: These errors have to do with the meaning and
+  context. They are often caused by type mismatches. For example, the
+  \texttt{sum()} function expects numeric input. If a character or
+  string is given, the function will return an error.
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  \textbf{Logical errors}: These errors have to do with the program
+  flow. A classic example is found in learning PEMDAS, the order of
+  operations in math equations.
+\end{enumerate}
+
+These errors are often the hardest to identify and debug because they
+typically do not return an error message. Logical errors are identified
+when a program or function has an unintended output.
+
+\hypertarget{debugging-tips}{%
+\section{Debugging Tips}\label{debugging-tips}}
+
+\begin{itemize}
+\tightlist
+\item
+  Check spellings.
+\item
+  Ensure that your variables contain the information you expect.
+\item
+  Check that all brackets are closed.
+\item
+  Ensure that all data and libraries are loaded correctly.
+\item
+  If you keep trying and trying and nothing seems to work, try clearing
+  your environment (there's a little broom icon at the top of the
+  Environment tab) and running your working code again.
+\end{itemize}
+
+\hypertarget{debugging-modules}{%
+\section{Debugging Modules}\label{debugging-modules}}
+
+\hypertarget{module-1-lines-17-18}{%
+\subsubsection{Module 1 (Lines 17-18)}\label{module-1-lines-17-18}}
+
+The cat\_data data frame should look something like this:
+
+\hypertarget{hints---click-on-the-code-buttons-to-the-right-to-show-hints.}{%
+\paragraph{Hints - click on the code buttons to the right to show
+hints.}\label{hints---click-on-the-code-buttons-to-the-right-to-show-hints.}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# What is the name of the csv you are trying to access? Check your directory.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# What does `header=F` do? Check the documentation for `read.csv()`.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# What does `row.names=NULL` do? Check the documentation for `read.csv()`.}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{solution---click-on-the-code-button-to-the-right-to-show-a-solution}{%
+\paragraph{Solution - click on the code button to the right to show a
+solution}\label{solution---click-on-the-code-button-to-the-right-to-show-a-solution}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cat_data <-}\StringTok{ }\NormalTok{cats }\CommentTok{#or}
+\NormalTok{cat_data <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"cats.csv"}\NormalTok{, }\DataTypeTok{header=}\NormalTok{T, }\DataTypeTok{row.names=}\DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{module-2-lines-21-23}{%
+\subsubsection{Module 2 (Lines 21-23)}\label{module-2-lines-21-23}}
+
+The expected output should look something like this:
+
+{[}1{]} ``M''
+
+{[}1{]} 3.9
+
+Bwt Hwt 144 3.9 20.5
+
+\hypertarget{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-1}{%
+\paragraph{Hints - click on the code buttons to the right to show
+hints.}\label{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# How do you index a vector?}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# How do you do negative indexing?}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{solution---click-on-the-code-button-to-the-right-to-show-a-solution.}{%
+\paragraph{Solution - click on the code button to the right to show a
+solution.}\label{solution---click-on-the-code-button-to-the-right-to-show-a-solution.}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cat_data}\OperatorTok{$}\NormalTok{Sex[}\DecValTok{144}\NormalTok{]}
+\NormalTok{cat_data}\OperatorTok{$}\NormalTok{Bwt[}\OperatorTok{-}\KeywordTok{c}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\DecValTok{143}\NormalTok{)] }\CommentTok{#negative indexing}
+\NormalTok{cat_data[}\DecValTok{144}\NormalTok{, }\DecValTok{2}\OperatorTok{:}\DecValTok{3}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{module-3-lines-27-30}{%
+\subsubsection{Module 3 (Lines 27-30)}\label{module-3-lines-27-30}}
+
+\hypertarget{hint---click-on-the-code-button-to-the-right-to-show-a-hint.}{%
+\paragraph{Hint - click on the code button to the right to show a
+hint.}\label{hint---click-on-the-code-button-to-the-right-to-show-a-hint.}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# How do you index a data frame?}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{solution---click-on-the-code-button-to-the-right-to-show-a-solution.-1}{%
+\paragraph{Solution - click on the code button to the right to show a
+solution.}\label{solution---click-on-the-code-button-to-the-right-to-show-a-solution.-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{large_hearts <-}\StringTok{ }\NormalTok{cat_data[cat_data}\OperatorTok{$}\NormalTok{Hwt }\OperatorTok{>}\StringTok{ }\DecValTok{12}\NormalTok{, ] }\CommentTok{#or}
+\NormalTok{large_hearts <-}\StringTok{ }\KeywordTok{subset}\NormalTok{(cat_data, Hwt }\OperatorTok{>}\StringTok{ }\DecValTok{12}\NormalTok{)}
+
+\NormalTok{small_hearts <-}\StringTok{ }\KeywordTok{subset}\NormalTok{(cat_data, Hwt }\OperatorTok{<}\StringTok{ }\DecValTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{module-4-lines-33-38}{%
+\subsubsection{Module 4 (Lines 33-38)}\label{module-4-lines-33-38}}
+
+The cat\_data data frame should now look something like this:
+
+\hypertarget{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-2}{%
+\paragraph{Hints - click on the code buttons to the right to show
+hints.}\label{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-2}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# What is the length of `hwt_class`? What is the length of a column in `cat_data`. Remember that data frames are a collection of vectors of the same length.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Check spelling.}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{solution---click-on-the-code-button-to-the-right-to-show-a-solution-1}{%
+\paragraph{Solution - click on the code button to the right to show a
+solution}\label{solution---click-on-the-code-button-to-the-right-to-show-a-solution-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{hwt_class <-}\StringTok{ }\KeywordTok{rep}\NormalTok{(}\StringTok{"M"}\NormalTok{, }\DecValTok{144}\NormalTok{)}
+\NormalTok{large_ids <-}\StringTok{ }\KeywordTok{which}\NormalTok{(cat_data}\OperatorTok{$}\NormalTok{Hwt }\OperatorTok{>}\StringTok{ }\DecValTok{12}\NormalTok{)}
+\NormalTok{hwt_class[large_ids] <-}\StringTok{ "L"}
+\NormalTok{small_ids <-}\StringTok{ }\KeywordTok{which}\NormalTok{(cat_data}\OperatorTok{$}\NormalTok{Hwt }\OperatorTok{<}\StringTok{ }\DecValTok{8}\NormalTok{)}
+\NormalTok{hwt_class[small_ids] <-}\StringTok{ "S"}
+\NormalTok{cat_data}\OperatorTok{$}\NormalTok{Hwt_class <-}\StringTok{ }\NormalTok{hwt_class}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{module-5-line-41}{%
+\subsubsection{Module 5 (Line 41)}\label{module-5-line-41}}
+
+\hypertarget{hint---click-on-the-code-button-to-the-right-to-show-a-hint.-1}{%
+\paragraph{Hint - click on the code button to the right to show a
+hint.}\label{hint---click-on-the-code-button-to-the-right-to-show-a-hint.-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Check spelling.}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{solution---click-on-the-code-button-to-the-right-to-show-a-solution.-2}{%
+\paragraph{Solution - click on the code button to the right to show a
+solution.}\label{solution---click-on-the-code-button-to-the-right-to-show-a-solution.-2}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{write.csv}\NormalTok{(cat_data, }\StringTok{"./cats_edited.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{module-6-lines-45-52}{%
+\subsubsection{Module 6 (Lines 45-52)}\label{module-6-lines-45-52}}
+
+The code above should produce a plot that looks like this:
+
+\hypertarget{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-3}{%
+\paragraph{Hints - click on the code buttons to the right to show
+hints.}\label{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-3}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Do the aesthetics in the `ggplot()` function correspond to those in the `scale_*fill*_brewer()` function?}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Are there alternative settings for position in the geom_bar() function?}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# If you store a plot as an object, there's one more step you need to do for writing it to a file. If you're stuck, check out the Graphs section of Cookbook for R.}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{solution---click-on-the-button-to-the-right-to-show-a-solution.}{%
+\paragraph{Solution - click on the button to the right to show a
+solution.}\label{solution---click-on-the-button-to-the-right-to-show-a-solution.}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{png}\NormalTok{(}\StringTok{"frequency_plot.png"}\NormalTok{, }\DataTypeTok{width=}\DecValTok{1000}\NormalTok{, }\DataTypeTok{height=}\DecValTok{1000}\NormalTok{)}
+\NormalTok{freq <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\DataTypeTok{data=}\NormalTok{cat_data, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{Hwt_class, }\DataTypeTok{fill=}\NormalTok{Sex))}\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat=}\StringTok{"count"}\NormalTok{, }\DataTypeTok{position=}\KeywordTok{position_dodge}\NormalTok{())}\OperatorTok{+}
+\StringTok{  }\KeywordTok{xlab}\NormalTok{(}\StringTok{"Heart Size"}\NormalTok{)}\OperatorTok{+}\StringTok{ }\KeywordTok{ylab}\NormalTok{(}\StringTok{"Count"}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Number of Cats in Each Size Classification"}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\KeywordTok{c}\NormalTok{(}\StringTok{"midnightblue"}\NormalTok{, }\StringTok{"mediumturquoise"}\NormalTok{))}\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_bw}\NormalTok{()}
+\KeywordTok{print}\NormalTok{(freq)}
+\KeywordTok{dev.off}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{module-7-lines-55-61}{%
+\subsubsection{Module 7 (Lines 55-61)}\label{module-7-lines-55-61}}
+
+The Hwt data frame should look something like this:
+
+\hypertarget{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-4}{%
+\paragraph{Hints - click on the code buttons to the right to show
+hints.}\label{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-4}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# What kind of object is returned by `cat_data[cat_data$Hwt_class == "S",]`? }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# What kind of argument does `sd()` expect?}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# How many elements are in `avg`? How many elements are in `se`? Remember that data frames are a collection of vectors of the same length.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# R is case sensitive. Are there any instances where the code is trying to refer to an object but mismatches the case?}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{solution---click-on-the-code-button-to-the-right-to-show-a-solution-2}{%
+\paragraph{Solution - click on the code button to the right to show a
+solution}\label{solution---click-on-the-code-button-to-the-right-to-show-a-solution-2}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{avg <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\KeywordTok{mean}\NormalTok{(cat_data[cat_data}\OperatorTok{$}\NormalTok{Hwt_class }\OperatorTok{==}\StringTok{ "S"}\NormalTok{,}\DecValTok{2}\NormalTok{]),}
+         \KeywordTok{mean}\NormalTok{(cat_data[cat_data}\OperatorTok{$}\NormalTok{Hwt_class }\OperatorTok{==}\StringTok{ "M"}\NormalTok{,}\DecValTok{2}\NormalTok{]),}
+         \KeywordTok{mean}\NormalTok{(cat_data[cat_data}\OperatorTok{$}\NormalTok{Hwt_class }\OperatorTok{==}\StringTok{ "L"}\NormalTok{,}\DecValTok{2}\NormalTok{]))}
+\NormalTok{se <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\KeywordTok{sd}\NormalTok{(cat_data[cat_data}\OperatorTok{$}\NormalTok{Hwt_class }\OperatorTok{==}\StringTok{ "S"}\NormalTok{,}\DecValTok{2}\NormalTok{]),}
+        \KeywordTok{sd}\NormalTok{(cat_data[cat_data}\OperatorTok{$}\NormalTok{Hwt_class }\OperatorTok{==}\StringTok{ "M"}\NormalTok{,}\DecValTok{2}\NormalTok{]),}
+        \KeywordTok{sd}\NormalTok{(cat_data[cat_data}\OperatorTok{$}\NormalTok{Hwt_class }\OperatorTok{==}\StringTok{ "L"}\NormalTok{,}\DecValTok{2}\NormalTok{]))}
+\NormalTok{Hwt <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{Class=}\KeywordTok{c}\NormalTok{(}\StringTok{"S"}\NormalTok{, }\StringTok{"M"}\NormalTok{, }\StringTok{"L"}\NormalTok{),}
+                      \DataTypeTok{Avg=}\NormalTok{avg, }\DataTypeTok{SE=}\NormalTok{se)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{module-8-lines-63-72}{%
+\subsubsection{Module 8 (Lines 63-72)}\label{module-8-lines-63-72}}
+
+The code above should produce a plot that looks like this:
+
+\hypertarget{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-5}{%
+\paragraph{Hints - click on the code buttons to the right to show
+hints.}\label{hints---click-on-the-code-buttons-to-the-right-to-show-hints.-5}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Are there alternative settings for stat in the `geom_bar()` function?}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# What does width in the `geom_errorbar()` function do?}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Where are the modified labels and title? Pay attention to what follows the `guides()` function.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Look at the documentation for `scale_fill_brewer()`. What is `"Accent"` referring to?}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{solution---click-on-the-code-button-to-the-right-to-show-a-solution.-3}{%
+\paragraph{Solution - click on the code button to the right to show a
+solution.}\label{solution---click-on-the-code-button-to-the-right-to-show-a-solution.-3}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{ggplot}\NormalTok{(}\DataTypeTok{data=}\NormalTok{Hwt, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{Class, }\DataTypeTok{y=}\NormalTok{Avg, }\DataTypeTok{fill=}\NormalTok{Class))}\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat=}\StringTok{"identity"}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_errorbar}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{ymin=}\NormalTok{Avg}\OperatorTok{-}\NormalTok{SE, }\DataTypeTok{ymax=}\NormalTok{Avg}\OperatorTok{+}\NormalTok{SE), }
+                \DataTypeTok{width=}\NormalTok{.}\DecValTok{2}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{guides}\NormalTok{(}\DataTypeTok{fill=}\NormalTok{F)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{xlab}\NormalTok{(}\StringTok{"Heart Size"}\NormalTok{)}\OperatorTok{+}\StringTok{ }\KeywordTok{ylab}\NormalTok{(}\StringTok{"Average Body Weight (kg)"}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Average Body Weights by Size Calssifaction"}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_brewer}\NormalTok{(}\DataTypeTok{palette=}\StringTok{"Accent"}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_bw}\NormalTok{()}
+\KeywordTok{ggsave}\NormalTok{(}\StringTok{"avg_plot.png"}\NormalTok{, }\DataTypeTok{width=}\DecValTok{5}\NormalTok{, }\DataTypeTok{height=}\DecValTok{5}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\end{document}
