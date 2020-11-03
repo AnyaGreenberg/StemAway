@@ -1,9 +1,9 @@
 ---
 title: "Debugging Practice Modules with Solutions"
 output:
-  pdf_document: default
   html_document:
     code_folding: hide
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -371,3 +371,14 @@ ggplot(data=Hwt, aes(x=Class, y=Avg, fill=Class))+
   theme_bw()
 ggsave("avg_plot.png", width=5, height=5)
 ```
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
