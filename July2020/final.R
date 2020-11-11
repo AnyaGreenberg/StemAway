@@ -1,274 +1,165 @@
-setwd("C:/Users/durbe/OneDrive/Documents/ReposExtras/STEM-Away/July2020/final")
+setwd("C:/Users/durbe/OneDrive/Documents/ReposExtras/STEM-Away/Final/")
 
-##### PHENO DATA #####
-library(GEOquery)
-gse <- getGEO(filename="./GEODatasets/AML/GSE97485_series_matrix.txt.gz")
-
-# 2. copy phenotype data and transpose into a new sheet
-pheno <- gse@phenoData@data
-
-# 3. remove non-relevant columns/rows
-meta <- factor(rep(c("cancer", "normal"), c(20,10)))
-names(meta) <- row.names(pheno)
-
+##### METADATA
+# library(GEOquery)
+# geo <- getGEO(filename="./data/GSE68417_series_matrix.txt.gz")
+# pheno <- geo@phenoData@data
+# meta <- pheno$`analysis group:ch1`
+# names(meta) <- rownames(pheno)
+# meta <- sub("normal", "Normal", meta)
+# write.table(meta, "./data/meta.txt")
+meta <- read.table("./data/meta.txt", header=T, row.names=1)
 
 
-##### WEEK TWO - WEEK THREE #####
-library(affy)
-library(affyPLM)
-library(simpleaffy)
-library(arrayQualityMetrics)
-library(affyQCReport)
-library(gcrma)
-library(sva)
+##### QUALITY CONTROL
+library(oligo)
 library(ggplot2)
 library(pheatmap)
 
-gse <- ReadAffy(compress=T, celfile.path="./GEODatasets/AML/GSE97485/")
+#https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE68417
+gse68417 <- read.celfiles(list.files("./data/raw/GSE68417/", full.names=T)) 
 
-### QUALITY CONTROL - before normalization
-arrayQualityMetrics(gse, "./QC/arrayQualityMetrics/", force=T, do.logtransform=T)
-
-# affyQCReport
-QCReport(gse, "./QC/affyQCReport.pdf")
-
-# affyPLM
-pset <- fitPLM(gse, background=T, normalize=T)
-rle <- RLE(pset, type="stats")
-rle <- data.frame(Median=rle[1,])
-ggplot(rle, aes(Median))+ geom_histogram()+ xlab("Median")+ ylab("Frequency")+ ggtitle("RLE Histogram")+ theme_bw()
-par(mai=c(3.5,1,1,1))
-RLE(pset, main="RLE", las=2, ce.lab=0.5)
-
-nuse <- NUSE(pset, type="stats")
-nuse <- data.frame(Median=nuse[1,])
-ggplot(nuse, aes(Median))+ geom_histogram()+ xlab("Median")+ ylab("Frequency")+ ggtitle("NUSE Histogram")+ theme_bw()
-par(mai=c(3.5,1,1,1))
-NUSE(pset, main="NUSE", las=2)
+norm <- rma(gse68417)
+colnames(norm) <- rownames(meta)
 
 
-### NORMALIZATION
-par(mai=c(3.5,1,1,1))
-boxplot(gse, main="Boxplot Raw Data", ylab="Probe Intensities", las=2, col=c("red", "orange", "yellow", "green", "blue", "purple"))
+## VISUALIZATION
+boxplot(gse68417, which="all")
+boxplot(norm, which="all")
 
-rma <- rma(gse)
-saveRDS(rma, "./QC/data/norm/rma.rds")
-par(mai=c(3.5,1,1,1))
-boxplot(exprs(rma), main="Boxplot rma Data", ylab="Probe Intensities", las=2, col=c("red", "orange", "yellow", "green", "blue", "purple"))
+plm <- fitProbeLevelModel(gse68417)
+RLE(plm)
+NUSE(plm)
 
-mas5 <- mas5(gse)
-gcrma <- gcrma(gse)
+Tissue <- as.factor(meta$x)
+pca <- prcomp(norm, scale=F, center=F)
+pca <- as.data.frame(pca$rotation)
+ggplot(pca, aes(x=PC1, y=PC2, color=Tissue))+
+  geom_point()+ stat_ellipse()+
+  scale_colour_manual(values=c("hotpink1", "navy", "goldenrod2", "aquamarine4"))+
+  ggtitle("PCA")+ theme_bw()
 
-
-#format colnames
-temp <- strsplit(colnames(rma), "_")
-for (i in 1:98) {
-  colnames(rma)[i] <- temp[[i]][1]
-}
-colnames(rma) <- sub(".CEL.gz", "", colnames(rma))
-
-
-### VISUALIZATION
-## PCA
-pca_plot <- function(d, t) {
-  group <- as.factor(meta$mygroup)
-  pca <- prcomp(d, scale=F, center=F)
-  pca <- as.data.frame(pca$rotation)
-  ggplot(pca, aes(x=PC1, y=PC2, color=group))+
-    geom_point()+ stat_ellipse()+
-    scale_colour_manual(values=c("hotpink1", "navy", "goldenrod2", "aquamarine4"))+
-    ggtitle(t)+ theme_bw()
-}
-
-pca_plot(exprs(gse), "PCA before Normalization")
-pca_plot(exprs(rma), "PCA rma Normalization")
+dismat <- 1-cor(exprs(norm))
+Tissue <- data.frame(Tissue=factor(meta$x))
+rownames(Tissue) <- rownames(meta)
+pheatmap(dismat, cluster_rows=F, annotation_col=Tissue, main="Heatmap")
 
 
-## HEATMAP
-heatmap <- function(d,t) {
-  dismat <- 1-cor(d)
-  group <- data.frame(sample=factor(meta$CN))
-  row.names(group) <- colnames(d)
-  pheatmap(dismat, cluster_rows=F, annotation_col=group, main=t)
-}
-
-heatmap(exprs(rma), "Hierarchical Clustering Heatmap rma Normalization")
-heatmap(combatRma, "Hierarchical Clustering Heatmap rma Batch Correction")
-
-
-
-##### WEEK FOUR #####
-library(hgu133plus2.db)
+##### DGE
+library(hugene10sttranscriptcluster.db)
 library(WGCNA)
 library(limma)
 library(EnhancedVolcano)
-library(ggplot2)
-library(pheatmap)
+
+## ANNOTATION
+symbols <- AnnotationDbi::select(hugene10sttranscriptcluster.db, keys=rownames(norm), columns=c("SYMBOL"), keytype="PROBEID")
+symbols <- symbols[!duplicated(symbols$PROBEID),]
+rownames(symbols) <- symbols$PROBEID
+annot <- merge(symbols, exprs(norm), by="row.names")
+rownames(annot) <- annot$Row.names
+annot <- annot[-c(1,2)]
+annot <- na.omit(annot)
+annot <- collapseRows(annot[-1], rowGroup=annot$SYMBOL, rowID=rownames(annot))
+annot <- annot$datETcollapsed
 
 
-rma <- read.csv("./QC/data/bc/rma.csv")
-
-row.names(rma) <- rma$X
-rma <- rma[-1]
-
-
-### ANNOTATION
-annot <- function(d) {
-  symbols <- AnnotationDbi::select(hgu133plus2.db, keys=rownames(d), columns=c("SYMBOL"), keytype="PROBEID")
-  symbols <- symbols[!duplicated(symbols$PROBEID),]
-  row.names(symbols) <- symbols$PROBEID
-  d <- merge(symbols, d, by="row.names")
-  row.names(d) <- d$Row.names
-  d <- d[-c(1,2)]
-  d <- na.omit(d)
-  d <- collapseRows(d[-1], rowGroup=d$SYMBOL, rowID=rownames(d))
-  return(d)
-}
-
-annotRma <- annot(rma)
+## FILTERING
+means <- rowMeans(annot)
+perc2 <- as.numeric(quantile(means, probs=0.02, na.rm=T))
+filt <- annot[which(means > perc2),]
+# write.csv(filt, "./data/filt.csv")
 
 
-### GENE FILTERING
-filt <- function(d) {
-  means <- rowMeans(d)
-  perc2 <- as.numeric(quantile(means, probs=0.02, na.rm=T))
-  temp <- d[which(means > perc2),]
-  return(temp)
-}
+## LIMMA
+meta$Type <- c(rep("Normal", 6), rep("Cancer", 29), rep("Normal",14))
+Tissue <- as.factor(meta$Type)
+design <- model.matrix(~0+Tissue, meta)
 
-filtRma <- filt(annotRma$datETcollapsed)
-
-
-### LIMMA
-type <- factor(meta$CN, levels = c('Normal','Cancer'), ordered = F)
-row.names(meta) <- meta$X.Sample_geo_accession
-design <- model.matrix(~0+type, meta)
-
-max <- 50000
-
-limmaFit <- function(d) {
-  lm <- lmFit(d, design)
-  contrast <- makeContrasts(typeCancer-typeNormal, levels=design)
-  colnames(contrast) <- c("Cancer-Control")
-  fit <- contrasts.fit(lm, contrast)
-  fit <- eBayes(fit)
-  return(fit)
-}
-
-geneRma <- rownames(filtRma)
-fitRma <- limmaFit(filtRma)
-
-tTRma <- topTable(fitRma, coef=1, p.value=0.05, sort="P", genelist=geneRma, number=max)
-write.table(tTRma, "./DGE/data/rma.txt")
-
-length(rownames(tTRma[which(tTRma$adj.P.Val < 0.05),]))
+lm <- lmFit(filt, design)
+contrast <- makeContrasts(TissueCancer-TissueNormal, levels=design)
+fit <- contrasts.fit(lm, contrast)
+fit <- eBayes(fit)
+tT <- topTable(fit, adjust="fdr", sort.by="B", number=max(rownames(filt)))
+write.table(tT, "./data/DGE.txt")
 
 
-## VOLCANO PLOT
-EnhancedVolcano(tTRma, lab=row.names(tTRma), x="logFC", y="adj.P.Val", 
+## VISUALIZATION
+EnhancedVolcano(tT, lab=rownames(tT), x="logFC", y="adj.P.Val",
                 pointSize=1, legendLabSize=10, labSize=3.0,
-                title="Volcano Plot", subtitle="rma Normalization")
+                title="Volcano Plot")
+
+t50 <- topTable(fit, adjust="fdr", sort.by="B", number=50)
+input <- filt[(rownames(filt) %in% rownames(t50)),]
+Tissue <- data.frame(Tissue=factor(meta$x))
+rownames(Tissue) <- colnames(filt)
+pheatmap(input, culster_rows=F, annotation_col=Tissue, main="Top 50 Genes")
 
 
-## HEATMAP
-hm <- function(dFit, dFilt, gl, t) {
-  t50 <- topTable(dFit, genelist=gl, adjust.method="fdr", sort.by="P", number=50)
-  input <- dFilt[(rownames(dFilt) %in% rownames(t50)),]
-  group <- data.frame(sample=factor(meta$CN))
-  row.names(group) <- colnames(dFilt)
-  par(2,2,2,2)
-  pheatmap(input, main=t, cluster_rows=F, annotation_col=group)
-}
+##### FUNCTIONAL ANALYSIS
+library(org.Hs.eg.db)
 
-hm(fitRma, filtRma, geneRma, "Heatmap rma")
+geneLF <- tT$logFC
+names(geneLF) <- rownames(tT)
+DEG.up <- geneLF[geneLF > 1.0]
+DEG.up <- sort(DEG.up, decreasing=T)
+
+DEG <- AnnotationDbi::select(org.Hs.eg.db, keys=names(DEG.up), columns=c("ENTREZID"), keytype="SYMBOL")
 
 
-##### WEEK FIVE #####library(org.Hs.eg.db)
-library(topGO)
+## GENE ONTOLOGY
 library(clusterProfiler)
-library(pathview)
-library(magrittr)
-library(tidyr)
-library(msigdbr)
+
+ego <- enrichGO(DEG$ENTREZID, org.Hs.eg.db, ont="CC", readable=F)
+egoR <- setReadable(ego, org.Hs.eg.db, keyType="ENTREZID")
+barplot(egoR, title="CC")
+
+ego <- enrichGO(DEG$ENTREZID, org.Hs.eg.db, ont="BP", readable=F)
+egoR <- setReadable(ego, org.Hs.eg.db, keyType="ENTREZID")
+barplot(egoR, title="BP")
+
+ego <- enrichGO(DEG$ENTREZID, org.Hs.eg.db, ont="MF", readable=F)
+egoR <- setReadable(ego, org.Hs.eg.db, keyType="ENTREZID")
+barplot(egoR, title="MF")
+
+
+## KEGG
+ek <- enrichKEGG(DEG$ENTREZID)
+dotplot(ek, title="KEGG")
+
+
+## GENE-CONCEPT NETWORK
 library(enrichplot)
+ekR <- setReadable(ek, org.Hs.eg.db, keyType="ENTREZID")
+cnetplot(ekR, foldchange=DEG.up, categorySize="pvalue", colorEdge=T)
 
 
-rma <- read.table("./DGE/data/rma.txt")
+## TF ANALYSIS
+library(msigdbr)
+msig <- msigdbr(species="Homo sapiens", category="C3")
+c3 <- msig %>% select(gs_name, entrez_gene)
 
-### FUNCTIONAL ANALYSIS
-## DEG VECTOR
-genelist <- function(d) {
-  gene <- d$logFC
-  names(gene) <- d$ID
-  DEG.gene <- gene[gene > 1.5]
-  DEG.gene <- sort(DEG.gene, decreasing=T)
-  return(DEG.gene)
-}
-
-rGene <- genelist(rma)
-DEG.r <- AnnotationDbi::select(org.Hs.eg.db, keys=names(rGene), columns=c("ENTREZID"), keytype="SYMBOL")
+e <- enricher(DEG$ENTREZID, TERM2GENE=c3)
+eR <- setReadable(e, org.Hs.eg.db, keyType="ENTREZID")
+cnetplot(eR, foldchange=DEG.up, categorySize="pvalue", colorEdge=T)
 
 
-# GENE ONTOLOGY
-eGoD <- function(d, o, f) {
-  ego <- enrichGO(d$ENTREZID, org.Hs.eg.db, ont=o, readable=T)
-  write.csv(ego, f)
-}
-
-eGoD(DEG.r, "CC", "./FA/data/GO/rmaCC.csv")
-eGoD(DEG.r, "BP", "./FA/data/GO/rmaBP.csv")
-eGoD(DEG.r, "MF", "./FA/data/GO/rmaMF.csv")
-
-egoPlot  <- function(d, o, t) {
-  ego <- enrichGO(d$ENTREZID, org.Hs.eg.db, ont=o, readable=F)
-  egoR <- setReadable(ego, org.Hs.eg.db, keyType="ENTREZID")
-  barplot(egoR, title=t)
-}
-
-egoPlot(DEG.r, "CC", "rma CC")
-egoPlot(DEG.r, "BP", "rma BP")
-egoPlot(DEG.r, "MF", "rma MF")
-
-# OPTIONAL***
-ggoPlot <- function(d, o, l, t) {
-  ggo <- groupGO(d$ENTREZID, org.Hs.eg.db, keyType="ENTREZID", ont=o, level=l, readable=F)
-  barplot(ggo, title=t)
-}
+## EXTERNAL TOOLS
+write(names(DEG.up), "./data/genelist.txt")
 
 
-### KEGG ANALYSIS
-keggPlot <- function(d, gene, c, t) {
-  ek <- enrichKEGG(d$ENTREZID)
-  dotplot(ek, title=t)
-}
+## GSEA
+library(enrichplot)
+genes <- sort(geneLF, decreasing=T)
+DEG <- AnnotationDbi::select(org.Hs.eg.db, keys=names(genes), columns=c("ENTREZID"), keytype="SYMBOL")
+DEG <- DEG[!duplicated(DEG$SYMBOL),]
+names(genes) <- DEG$ENTREZID
+  
+msig <- msigdbr(species="Homo sapiens", category="H")
+h <- msig %>% select(gs_name, entrez_gene)
 
-keggPlot(DEG.r, rGene, T, "rma KEGG")
+gsea <- GSEA(genes, TERM2GENE=h)
+gseaplot2(gsea, geneSetID=1:5, pvalue_table=T)
 
-
-### GENE CONCEPT NETWORK
-cnetPlot <- function(d, gene, c) {
-  # ed <- enrichDGN(d$ENTREZID)
-  ek <- enrichKEGG(d$ENTREZID)
-  edR <- setReadable(ek, org.Hs.eg.db, keyType="ENTREZID")
-  cnetplot(edR, foldChange=gene, categorySize="pvalue", colorEdge=T, circular=c)
-}
-
-cnetPlot(DEG.r, rGene, F)
-cnetPlot(DEG.r, rGene, T)
-
-
-## TRANSCRIPTIONAL FACTOR ANALYSIS
-tfa <- function(d, gene) {
-  c3 <- read.gmt("./FA/data/c3.gmt")
-  e <- enricher(DEG.m$ENTREZID, TERM2GENE=c3)
-  temp <- setReadable(e, org.Hs.eg.db, keyType="ENTREZID")
-  cnetplot(temp, foldChange=gene, categorySize="pvalue", colorEdge=T)
-}
-
-tfa(DEG.r, rGene)
-
-
-# EXTERNAL TOOLS
-
-write(names(rGene), "./FA/data/genelist/rma_up.txt")
-write(names(rGeneA), "./FA/data/genelist/rma_all.txt")
+e <- enricher(names(genes), TERM2GENE=h)
+eR <- setReadable(e, org.Hs.eg.db, keyType="ENTREZID")
+heatplot(eR, foldChange=genes) #[0x9]
