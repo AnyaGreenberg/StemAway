@@ -7,7 +7,6 @@ In this internship, I focused on learning the general workflow of bioinformatics
 **Paper Related to Topics Studied**
 
 Guo, L., Yang, G., Kang, Y., Li, S., Duan, R., Shen, L., Jiang, W., Qian, B., Yin, Z., & Liang, T. (2020). Construction and Analysis of a ceRNA Network Reveals Potential Prognostic Markers in Colorectal Cancer. *Frontiers in genetics*, 11, 418. https://doi.org/10.3389/fgene.2020.00418
-ds
 
 **Data** 
 
