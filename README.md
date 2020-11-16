@@ -1,5 +1,7 @@
 # STEMAway
 
+### Bioinfromatics
+
 In this internship, I focused on learning the general workflow of bioinformatics research in relation to microarray data. This included learning about quality control, normalization methods, batch correction, DGE analysis using limma, and functional analysis. I ustilized various Bioconductor R packages and external tools such as Metascape, DAVID, EnrichR, and STRING.
 
 **Paper Related to Topics Studied**
@@ -10,3 +12,8 @@ ds
 **Data** 
 
 GEO database ascension #GSE8671 and #GSE32323
+
+### Machine Learning
+
+
+### Full Stack Development
