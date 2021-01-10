@@ -32,11 +32,11 @@ plot(sa)
 
 
 ##### ARRAYQUALITYMETRICS
-arrayQualityMetrics(gse, "QC/arrayQualityMetrics/", force=T, do.logtransform=T)
+# arrayQualityMetrics(gse, "QC/arrayQualityMetrics/", force=T, do.logtransform=T)
 
 
 ##### AFFYQCREPORT
-QCReport(gse, "QC/QCReport.pdf")
+# QCReport(gse, "QC/QCReport.pdf")
 
 
 ##### AFFYPLM
@@ -50,28 +50,28 @@ NUSE(pset, main="NUSE", ylab="Probe Intensities", las=2)
 
 ### BACKGROUND CORRECTION AND NORMALIZATION
 ##### MAS5
-mas5 <- mas5(gse)
+# mas5 <- mas5(gse)
 # write.csv(log2(exprs(mas5)), "Data/mas5.csv")
 mas5 <- read.csv("Data/mas5.csv", row.names=1)
 
 
 ##### RMA
-rma <- rma(gse)
+# rma <- rma(gse)
 # write.csv(exprs(rma), "Data/rma.csv")
 rma <- read.csv("Data/rma.csv", row.names=1)
 
 
 ##### GCRMA
-gcrma <- gcrma(gse)
+# gcrma <- gcrma(gse)
 # write.csv(exprs(gcrma), "Data/gcrma.csv")
 gcrma <- read.csv("Data/gcrma.csv", row.names=1)
 
 
 
 ### BATCH CORRECTION
-meta <- read.csv("Metadata/metadata.txt", row.names=1)
-design <- model.matrix(~Tissue, meta)
-bc <- ComBat(rma, meta$Batch, design)
+# meta <- read.csv("Metadata/metadata.txt", row.names=1)
+# design <- model.matrix(~Tissue, meta)
+# bc <- ComBat(rma, meta$Batch, design)
 # write.csv(bc,"Data/bc.csv")
 bc <- read.csv("Data/bc.csv", row.names=1)
 
