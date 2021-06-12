@@ -12,7 +12,8 @@ for (i in 1:length(colnames(exprs(gse)))) {
     row.names(gse@protocolData@data)[i] <- strsplit(row.names(gse@protocolData@data)[i], '.CEL')[[1]][1]
     colnames(exprs(gse))[i] <- strsplit(colnames(exprs(gse))[i], '.CEL')[[1]][1] #RLE/NUSE
 }
-  # #
+
+# Save affyBatch as RDS
 saveRDS(gse, 'data/affybatch.rds')
 
 # Get metadata from series matrix file
@@ -30,4 +31,5 @@ meta$TISSUE <- replace(meta$TISSUE, meta$TISSUE == 'lung cancer', 'CANCER')
 meta$STAGE <- replace(meta$STAGE, meta$STAGE == 'n/a', '0')
 View(meta)
 
+# Save metadata file
 write.csv(meta, 'data/metadata.csv', quote=FALSE)
